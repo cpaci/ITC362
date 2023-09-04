@@ -1,6 +1,10 @@
 <resources>
-    <string name="app_name">GeoQuiz</string>
+    <string name="app_name">MSU Bears</string>
     <string name="question_text">Canberra is the capital of Australia.</string>
     <string name="true_button">True</string>
     <string name="false_button">False</string>
+    <string name="correct_toast">Correct!</string>
+    <string name="incorrect_toast">Incorrect!</string>
+    <string name="go_bears">Go Bears!!!</string>
+    <string name="counter_button">Click to increment!</string>
 </resources>
