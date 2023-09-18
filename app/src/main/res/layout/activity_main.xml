@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="1dp">
+
+        <ImageView
+            android:id="@+id/trafficLightRed"
+            android:layout_width="172dp"
+            android:layout_height="330dp"
+            app:srcCompat="@drawable/red"
+            tools:layout_editor_absoluteX="119dp"
+            tools:layout_editor_absoluteY="42dp"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/trafficLightYellow"
+            android:layout_width="172dp"
+            android:layout_height="330dp"
+            app:srcCompat="@drawable/yellow"
+            tools:layout_editor_absoluteX="119dp"
+            tools:layout_editor_absoluteY="42dp"
+            tools:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/trafficLightGreen"
+            android:layout_width="172dp"
+            android:layout_height="330dp"
+            app:srcCompat="@drawable/green"
+            tools:layout_editor_absoluteX="119dp"
+            tools:layout_editor_absoluteY="42dp"
+            tools:visibility="gone" />
+
+        <Button
+            android:id="@+id/changeLightButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Click to change the stop light!"
+            tools:layout_editor_absoluteX="159dp"
+            tools:layout_editor_absoluteY="520dp" />
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
