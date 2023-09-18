@@ -46,7 +46,7 @@
             android:id="@+id/changeLightButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Click to change the stop light!"
+            android:text="Click to change the stop light"
             tools:layout_editor_absoluteX="159dp"
             tools:layout_editor_absoluteY="520dp" />
 
