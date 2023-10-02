@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.viewModels
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.steinmetz.msu.geoquiz.databinding.ActivityMainBinding
 import java.math.RoundingMode
@@ -17,16 +18,9 @@ private const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    private val quizViewModel: QuizViewModel by viewModels()
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true, false),
-        Question(R.string.question_oceans, true, false),
-        Question(R.string.question_mideast, false, false),
-        Question(R.string.question_africa, false, false),
-        Question(R.string.question_americas, true, false),
-        Question(R.string.question_asia, true, false)
-    )
-    private var currentIndex = 0
+
     private var correctVar = 0
     private var totalAnswered = 0
 
@@ -37,39 +31,33 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
+        updateQuestion()
+
         binding.trueButton.setOnClickListener { it: View ->
             checkAnswer(true)
+            checkAnswered()
+
 
         }
         binding.falseButton.setOnClickListener { it: View ->
             checkAnswer(false)
+            checkAnswered()
 
         }
         binding.nextButton.setOnClickListener { view: View ->
-            if (currentIndex == questionBank.size - 1) {
-
-                updateQuestion()
-            } else {
-                currentIndex = (currentIndex + 1) % questionBank.size
-                updateQuestion()
-
-            }
-        }
-
-        binding.questionTextView.setOnClickListener { view: View ->
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
+            checkAnswered()
         }
+
         binding.previousButton.setOnClickListener { view: View ->
 
-            if (currentIndex >= 1 && currentIndex < questionBank.size) {
-                currentIndex -= 1
-                updateQuestion()
-            } else if (currentIndex == 0) {
-            }
-
+            quizViewModel.moveToPrev()
+            updateQuestion()
+            checkAnswered()
         }
-        updateQuestion()
+
     }
 
     override fun onStart() {
@@ -98,16 +86,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion() {
-        val questionTextResId = questionBank[currentIndex].textResId
+        val questionTextResId = quizViewModel.currentQuestionText
         binding.questionTextView.setText(questionTextResId)
-        checkAnswered()
 
     }
 
 
     private fun checkAnswer(userAnswer: Boolean) {
-        questionBank[currentIndex].answered = true // Sets question answered var to true.
-        val correctAnswer = questionBank[currentIndex].answer
+        val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId: Int
         if (userAnswer == correctAnswer) {
             messageResId = R.string.correct_toast
@@ -115,16 +101,16 @@ class MainActivity : AppCompatActivity() {
         } else {
             messageResId = R.string.incorrect_toast
         }
-        checkAnswered()
+        quizViewModel.setAnswered()
         totalAnswered++
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
-        if (totalAnswered == questionBank.size) {
+        if (totalAnswered == quizViewModel.QuestionBankSize) {
             gradedQuiz()
         }
     }
 
     private fun checkAnswered() {
-        if (questionBank[currentIndex].answered == true) {
+        if (quizViewModel.currentQuestionAnswered == true) {
             binding.trueButton.isEnabled = false
             binding.falseButton.isEnabled = false
         } else {
@@ -133,13 +119,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
     private fun gradedQuiz() {
         var score: Double
         if (correctVar == 0) {
-            Toast.makeText(this, "0.0%", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "0.0%", Toast.LENGTH_LONG).show()
         } else {
-            score = "%.1f".format(correctVar.toDouble() / questionBank.size * 100).toDouble()
-            Toast.makeText(this, "$score%", Toast.LENGTH_SHORT).show()
+            score = "%.1f".format(correctVar.toDouble() / quizViewModel.QuestionBankSize * 100).toDouble()
+            Toast.makeText(this, "$score%", Toast.LENGTH_LONG).show()
             correctVar = 0
         }
 
