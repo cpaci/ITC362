@@ -9,40 +9,47 @@ import androidx.core.view.isGone
 
 class MainActivity : AppCompatActivity() {
 
-    private var trafficLightRed = findViewById<View>(R.id.trafficLightRed)
-    private var trafficLightYellow = findViewById<View>(R.id.trafficLightYellow)
-    private var trafficLightGreen = findViewById<View>(R.id.trafficLightGreen)
-    private lateinit var changeLightButton: Button
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-       changeLightButton = findViewById<Button>(R.id.changeLightButton)
+        val changeLightButton: Button = findViewById<Button>(R.id.changeLightButton)
+        val trafficLightRed: View = findViewById<View>(R.id.trafficLightRed)
+        val trafficLightYellow: View = findViewById<View>(R.id.trafficLightYellow)
+        val trafficLightGreen: View = findViewById<View>(R.id.trafficLightGreen)
+        val superContainer: View = findViewById<View>(R.id.superContainer)
 
-        changeLightButton.setOnClickListener {
+         fun setRedLight() {
+            trafficLightGreen.isGone = true
+            trafficLightYellow.isGone = true
+        }
+
+        setRedLight()
+
+         fun updateLight() {
             if (!trafficLightRed.isGone) {
                 trafficLightRed.isGone = true
                 trafficLightGreen.isGone = false
-                changeLightButton.setBackgroundColor(Color.parseColor("#228B22"))
+                superContainer.setBackgroundColor(Color.parseColor("#549C30"))
             } else if (!trafficLightGreen.isGone) {
                 trafficLightGreen.isGone = true
                 trafficLightYellow.isGone = false
-                changeLightButton.setBackgroundColor(Color.parseColor("#F1FC00"))
+                superContainer.setBackgroundColor(Color.parseColor("#FFBF00"))
             } else {
                 trafficLightYellow.isGone = true
                 trafficLightRed.isGone = false
-                changeLightButton.setBackgroundColor(Color.parseColor("#B70000"))
+                superContainer.setBackgroundColor(Color.parseColor("#B70000"))
             }
+
+
+        }
+        changeLightButton.setOnClickListener { updateLight() }
+
         }
 
-    }
-
-    private fun updateLight() {
 
 
 
-    }
+
 
 }
