@@ -34,15 +34,18 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
         updateQuestion()
 
+        if (quizViewModel.currentQuestionAnswered == true) {
+            checkAnswered()
+        }
+
         binding.trueButton.setOnClickListener { it: View ->
             checkAnswer(true)
             checkAnswered()
-
-
         }
         binding.falseButton.setOnClickListener { it: View ->
             checkAnswer(false)
             checkAnswered()
+
 
         }
         binding.nextButton.setOnClickListener { view: View ->
@@ -59,6 +62,48 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    private fun updateQuestion() {
+        val questionTextResId = quizViewModel.currentQuestionText
+        binding.questionTextView.setText(questionTextResId)
+
+    }
+    private fun checkAnswer(userAnswer: Boolean) {
+        val correctAnswer = quizViewModel.currentQuestionAnswer
+        val messageResId: Int
+        if (userAnswer == correctAnswer) {
+            messageResId = R.string.correct_toast
+            correctVar++
+        } else {
+            messageResId = R.string.incorrect_toast
+        }
+        totalAnswered++
+
+        quizViewModel.isAnswered()
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+        if (totalAnswered == quizViewModel.questionBankSize) {
+            gradedQuiz()
+        }
+    }
+    private fun checkAnswered() {
+        if (quizViewModel.currentQuestionAnswered == true) {
+            binding.trueButton.isEnabled = false
+            binding.falseButton.isEnabled = false
+        } else {
+            binding.trueButton.isEnabled = true
+            binding.falseButton.isEnabled = true
+        }
+    }
+    private fun gradedQuiz() {
+        var score: Double
+        if (correctVar == 0) {
+            Toast.makeText(this, "0.0%", Toast.LENGTH_LONG).show()
+        } else {
+            score = "%.1f".format(correctVar.toDouble() / quizViewModel.questionBankSize * 100).toDouble()
+            Toast.makeText(this, "$score%", Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     override fun onStart() {
         super.onStart()
@@ -84,54 +129,4 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         Log.d(TAG, "onDestroy() called")
     }
-
-    private fun updateQuestion() {
-        val questionTextResId = quizViewModel.currentQuestionText
-        binding.questionTextView.setText(questionTextResId)
-
-    }
-
-
-    private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = quizViewModel.currentQuestionAnswer
-        val messageResId: Int
-        if (userAnswer == correctAnswer) {
-            messageResId = R.string.correct_toast
-            correctVar++
-        } else {
-            messageResId = R.string.incorrect_toast
-        }
-        quizViewModel.setAnswered()
-        totalAnswered++
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
-        if (totalAnswered == quizViewModel.QuestionBankSize) {
-            gradedQuiz()
-        }
-    }
-
-    private fun checkAnswered() {
-        if (quizViewModel.currentQuestionAnswered == true) {
-            binding.trueButton.isEnabled = false
-            binding.falseButton.isEnabled = false
-        } else {
-            binding.trueButton.isEnabled = true
-            binding.falseButton.isEnabled = true
-        }
-    }
-
-
-
-    private fun gradedQuiz() {
-        var score: Double
-        if (correctVar == 0) {
-            Toast.makeText(this, "0.0%", Toast.LENGTH_LONG).show()
-        } else {
-            score = "%.1f".format(correctVar.toDouble() / quizViewModel.QuestionBankSize * 100).toDouble()
-            Toast.makeText(this, "$score%", Toast.LENGTH_LONG).show()
-            correctVar = 0
-        }
-
-
-    }
-
 }
