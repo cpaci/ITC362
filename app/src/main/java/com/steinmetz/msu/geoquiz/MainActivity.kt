@@ -1,5 +1,7 @@
 package com.steinmetz.msu.geoquiz
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,6 +10,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.google.android.material.tabs.TabLayout.TabGravity
 import com.steinmetz.msu.geoquiz.databinding.ActivityMainBinding
@@ -19,6 +23,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val quizViewModel: QuizViewModel by viewModels()
+
+    private val cheatLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Handle the result
+        if(result.resultCode == Activity.RESULT_OK) {
+            quizViewModel.isCheater =
+                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+        }
+    }
 
 
     private var correctVar = 0
@@ -34,31 +48,37 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
         updateQuestion()
 
-        if (quizViewModel.currentQuestionAnswered == true) {
+        if (quizViewModel.currentQuestionAnswered) {
             checkAnswered()
         }
 
-        binding.trueButton.setOnClickListener { it: View ->
+        binding.trueButton.setOnClickListener {
             checkAnswer(true)
             checkAnswered()
         }
-        binding.falseButton.setOnClickListener { it: View ->
+        binding.falseButton.setOnClickListener {
             checkAnswer(false)
             checkAnswered()
 
 
         }
-        binding.nextButton.setOnClickListener { view: View ->
+        binding.nextButton.setOnClickListener {
             quizViewModel.moveToNext()
             updateQuestion()
             checkAnswered()
         }
 
-        binding.previousButton.setOnClickListener { view: View ->
-
+        binding.previousButton.setOnClickListener {
             quizViewModel.moveToPrev()
             updateQuestion()
             checkAnswered()
+        }
+
+        binding.cheatButton.setOnClickListener {
+            // Start Activity
+            val answerIsTrue = quizViewModel.currentQuestionAnswerSaver
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            cheatLauncher.launch(intent)
         }
 
     }
@@ -71,14 +91,17 @@ class MainActivity : AppCompatActivity() {
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId: Int
-        if (userAnswer == correctAnswer) {
+        if (quizViewModel.isCheater) {
+            messageResId = R.string.judgement_toast
+
+        }else if(userAnswer == correctAnswer) {
             messageResId = R.string.correct_toast
             correctVar++
-        } else {
+        }
+        else {
             messageResId = R.string.incorrect_toast
         }
         totalAnswered++
-
         quizViewModel.isAnswered()
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
         if (totalAnswered == quizViewModel.questionBankSize) {
@@ -103,6 +126,14 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "$score%", Toast.LENGTH_LONG).show()
         }
     }
+
+
+    //------------------------------------BEGIN CHEAT ACTIVITY--------------------------------------
+
+
+    //------------------------------------END CHEAT ACTIVITY________________________________________
+
+
 
 
     override fun onStart() {
