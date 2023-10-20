@@ -1,21 +1,13 @@
 package com.steinmetz.msu.geoquiz
 
 import android.app.Activity
-import android.content.Intent
-import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import com.google.android.material.tabs.TabLayout.TabGravity
+import androidx.appcompat.app.AppCompatActivity
 import com.steinmetz.msu.geoquiz.databinding.ActivityMainBinding
-import java.math.RoundingMode
 
 private const val TAG = "MainActivity"
 
@@ -28,9 +20,9 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         // Handle the result
-        if(result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == Activity.RESULT_OK) {
             quizViewModel.isCheater =
-                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false ) ?: false
+                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
         }
     }
 
@@ -68,30 +60,25 @@ class MainActivity : AppCompatActivity() {
             quizViewModel.moveToNext()
             updateQuestion()
             checkAnswered()
-            if(quizViewModel.isCheated) {
-                quizViewModel.isCheater = quizViewModel.isCheated
-            } else {
-                quizViewModel.isCheater = false
-            }
-
         }
 
         binding.previousButton.setOnClickListener {
             quizViewModel.moveToPrev()
             updateQuestion()
             checkAnswered()
-            if(quizViewModel.isCheated) {
-                quizViewModel.isCheater = quizViewModel.isCheated
-            } else {
-                quizViewModel.isCheater = false
-            }
         }
 
         binding.cheatButton.setOnClickListener {
             // Start Activity
-            val hasCheated = quizViewModel.isCheated
+            val hasCheated = quizViewModel.isCheater
             val answerIsTrue = quizViewModel.currentQuestionAnswer
-            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            val currentQuestionCheated = quizViewModel.isCheated
+            val intent = CheatActivity.newIntent(
+                this@MainActivity,
+                answerIsTrue,
+                hasCheated,
+                currentQuestionCheated
+            )
             cheatLauncher.launch(intent)
         }
 
@@ -100,18 +87,17 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val questionTextResId = quizViewModel.currentQuestionText
         binding.questionTextView.setText(questionTextResId)
-
     }
+
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId: Int
         if (quizViewModel.isCheater) {
             messageResId = R.string.judgement_toast
-        }else if(userAnswer == correctAnswer) {
+        } else if (userAnswer == correctAnswer) {
             messageResId = R.string.correct_toast
             correctVar++
-        }
-        else {
+        } else {
             messageResId = R.string.incorrect_toast
         }
         totalAnswered++
@@ -121,6 +107,7 @@ class MainActivity : AppCompatActivity() {
             gradedQuiz()
         }
     }
+
     private fun checkAnswered() {
         if (quizViewModel.currentQuestionAnswered == true) {
             binding.trueButton.isEnabled = false
@@ -130,21 +117,18 @@ class MainActivity : AppCompatActivity() {
             binding.falseButton.isEnabled = true
         }
     }
+
     private fun gradedQuiz() {
         var score: Double
         if (correctVar == 0) {
             Toast.makeText(this, "0.0%", Toast.LENGTH_LONG).show()
         } else {
-            score = "%.1f".format(correctVar.toDouble() / quizViewModel.questionBankSize * 100).toDouble()
+            score = "%.1f".format(correctVar.toDouble() / quizViewModel.questionBankSize * 100)
+                .toDouble()
             Toast.makeText(this, "$score%", Toast.LENGTH_LONG).show()
         }
     }
 
-
-    override fun onStart() {
-        super.onStart()
-
-    }
 
     override fun onResume() {
         super.onResume()
