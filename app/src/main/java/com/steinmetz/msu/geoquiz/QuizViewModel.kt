@@ -22,7 +22,10 @@ const val QUESTION_FIVE_CHEATED = "QUESTION_FIVE_CHEATED"
 const val QUESTION_SIX_CHEATED = "QUESTION_SIX_CHEATED"
 
 const val IS_CHEATER_KEY = "IS_CHEATER_KEY"
+const val CURRENT_QUESTION_IS_CHEATED = "CURRENT_QUESTION_IS_CHEATED"
 const val CURRENT_QUESTION_ANSWER = "CURRENT_QUESTION_ANSWER"
+
+
 
 
 
@@ -39,13 +42,9 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
 
 
 
-
-
     private var currentIndex: Int
         get() = savedStateHandle.get(CURRENT_INDEX_KEY) ?: 0
         set(value) = savedStateHandle.set(CURRENT_INDEX_KEY, value)
-
-    var publicCurrentIndex = currentIndex
 
     private var questionOne: Boolean
         get() = savedStateHandle.get(QUESTION_ONE) ?: false
@@ -74,34 +73,40 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
 
 
     private var questionOneCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_ONE_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_ONE_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_ONE_CHEATED, value)
 
     private var questionTwoCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_TWO_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_TWO_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_TWO_CHEATED, value)
 
     private var questionThreeCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_THREE_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_THREE_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_THREE_CHEATED, value)
 
     private var questionFourCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_FOUR_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_FOUR_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_FOUR_CHEATED, value)
 
     private var questionFiveCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_FIVE_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_FIVE_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_FIVE_CHEATED, value)
 
     private var questionSixCheated: Boolean
-        get() = savedStateHandle.get(QUESTION_SIX_CHEATED) ?: false
+        get() = savedStateHandle.get(QUESTION_SIX_CHEATED) ?: isCheated
         set(value) = savedStateHandle.set(QUESTION_SIX_CHEATED, value)
 
+    var isCheater: Boolean
+        get() = savedStateHandle.get(IS_CHEATER_KEY) ?: questionBank[currentIndex].isCheated
+        set(value) = savedStateHandle.set(IS_CHEATER_KEY, value)
 
+    var isCheated: Boolean
+        get() = savedStateHandle.get(CURRENT_QUESTION_IS_CHEATED) ?: false
+        set(value) = savedStateHandle.set(CURRENT_QUESTION_IS_CHEATED, value)
 
 
     val currentQuestionAnswer: Boolean
-        get() = questionBank[currentIndex].answer
+        get() = savedStateHandle.get(CURRENT_QUESTION_ANSWER) ?: questionBank[currentIndex].answer
 
     val currentQuestionText: Int
         get() = questionBank[currentIndex].textResId
@@ -111,19 +116,10 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
     val currentQuestionAnswered: Boolean
         get() = questionBank[currentIndex].answered
 
-    var currentQuestionAnswerSaver: Boolean
-        get() = savedStateHandle.get(CURRENT_QUESTION_ANSWER) ?: currentQuestionAnswer
-        set(value) = savedStateHandle.set(CURRENT_QUESTION_ANSWER, value)
-    var isCheater: Boolean
-        get() = savedStateHandle.get(IS_CHEATER_KEY) ?: false
-        set(value) = savedStateHandle.set(IS_CHEATER_KEY, value)
 
-    val isCheated: Boolean
-        get() = questionBank[currentIndex].isCheated
 
     fun moveToNext() {
         currentIndex = (currentIndex + 1) % questionBankSize
-        currentQuestionAnswerSaver = currentQuestionAnswer
     }
     fun moveToPrev() {
 
@@ -133,7 +129,12 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         {
             currentIndex = questionBankSize - 1
         }
-        currentQuestionAnswerSaver = currentQuestionAnswer
+    }
+
+    fun isCheatedCheck() {
+
+        isCheated = questionBank[currentIndex].isCheated
+
     }
 
 fun isAnswered() {
@@ -165,28 +166,36 @@ fun isAnswered() {
     }
 }
 
-    fun questionCheated() {
-        when (currentIndex) {
+    fun setCheated() {
+          when (currentIndex) {
             0 -> {
                 questionOneCheated = true
+                questionBank[currentIndex].isCheated = true
             }
             1 -> {
                 questionTwoCheated = true
+                questionBank[currentIndex].isCheated = true
             }
             2 -> {
                 questionThreeCheated = true
+                questionBank[currentIndex].isCheated = true
             }
             3 -> {
                 questionFourCheated = true
+                questionBank[currentIndex].isCheated = true
             }
             4 -> {
                 questionFiveCheated = true
+                questionBank[currentIndex].isCheated = true
             }
             5 -> {
                 questionSixCheated = true
+                questionBank[currentIndex].isCheated = true
+            } else -> {
+                return
             }
         }
+        isCheated = true
     }
-
 
 }

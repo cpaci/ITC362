@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         // Handle the result
         if(result.resultCode == Activity.RESULT_OK) {
             quizViewModel.isCheater =
-                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false ) ?: false
         }
     }
 
@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate(Bundle?) called")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.d(TAG, quizViewModel.isCheated.toString())
+
 
         Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
         updateQuestion()
@@ -66,17 +68,29 @@ class MainActivity : AppCompatActivity() {
             quizViewModel.moveToNext()
             updateQuestion()
             checkAnswered()
+            if(quizViewModel.isCheated) {
+                quizViewModel.isCheater = quizViewModel.isCheated
+            } else {
+                quizViewModel.isCheater = false
+            }
+
         }
 
         binding.previousButton.setOnClickListener {
             quizViewModel.moveToPrev()
             updateQuestion()
             checkAnswered()
+            if(quizViewModel.isCheated) {
+                quizViewModel.isCheater = quizViewModel.isCheated
+            } else {
+                quizViewModel.isCheater = false
+            }
         }
 
         binding.cheatButton.setOnClickListener {
             // Start Activity
-            val answerIsTrue = quizViewModel.currentQuestionAnswerSaver
+            val hasCheated = quizViewModel.isCheated
+            val answerIsTrue = quizViewModel.currentQuestionAnswer
             val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
             cheatLauncher.launch(intent)
         }
@@ -93,7 +107,6 @@ class MainActivity : AppCompatActivity() {
         val messageResId: Int
         if (quizViewModel.isCheater) {
             messageResId = R.string.judgement_toast
-
         }else if(userAnswer == correctAnswer) {
             messageResId = R.string.correct_toast
             correctVar++
@@ -128,17 +141,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    //------------------------------------BEGIN CHEAT ACTIVITY--------------------------------------
-
-
-    //------------------------------------END CHEAT ACTIVITY________________________________________
-
-
-
-
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart() called")
+
     }
 
     override fun onResume() {
