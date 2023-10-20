@@ -4,70 +4,48 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.steinmetz.msu.geoquiz.databinding.ActivityCheatBinding
 
-private const val TAG = "CheatActivity"
-
 const val EXTRA_ANSWER_SHOWN = "com.steinmetz.android.geoquiz.answer_shown"
 private const val EXTRA_ANSWER_IS_TRUE = "com.steinmetz.android.geoquiz.answer_is_true"
-private const val EXTRA_HAS_CHEATED = "com.steinmetz.android.geoquiz.has_cheated"
-private const val EXTRA_CURRENT_QUESTION_CHEATED =
-    "com.steinmetz.android.geoquiz.current_question_cheated"
+private const val EXTRA_IS_ALREADY_CHEATER = "EXTRA_IS_ALREADY_CHEATER"
 
 class CheatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCheatBinding
-
-    private var answerIsTrue = false
-    private var hasCheated = false
-    private var currentQuestionCheated = false
-
-
-    private val quizViewModel: QuizViewModel by viewModels()
+    private val CheatViewModel: CheatViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCheatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        hasCheated = intent.getBooleanExtra(EXTRA_HAS_CHEATED, quizViewModel.isCheater)
-        currentQuestionCheated =
-            intent.getBooleanExtra(EXTRA_CURRENT_QUESTION_CHEATED, quizViewModel.isCheated)
-        answerIsTrue = intent.getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false)
-        Log.d(TAG, quizViewModel.isCheated.toString())
-        Log.d(TAG, "THIS IS CHEAT ACTIVITY INIT")
-        var answerText = when {
+
+        val answerIsTrue = intent.getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false)
+        val isAlreadyCheater = intent.getBooleanExtra(EXTRA_IS_ALREADY_CHEATER, false)
+        CheatViewModel.setAnswerIsTrue(answerIsTrue)
+        setAnswerShownResult(CheatViewModel.isAnswerShown())
+        val answerText = when {
             answerIsTrue -> R.string.true_button
             else -> R.string.false_button
         }
-
-        if (hasCheated) {
+        if(isAlreadyCheater) {
             binding.answerTextView.setText(answerText)
-            setAnswerShownResult(true)
         }
-        if (quizViewModel.isCheater) {
+        if(CheatViewModel.isAnswerShown()) {
             binding.answerTextView.setText(answerText)
-            setAnswerShownResult(true)
         }
-
-
-        Log.d(TAG, "Is Cheated set")
-        Log.d(TAG, quizViewModel.isCheated.toString())
 
         binding.showAnswerButton.setOnClickListener {
-            quizViewModel.setCheated()
-            Log.d(TAG, quizViewModel.isCheated.toString())
-            Log.d(TAG, "Show Answer pressed and isCheated set to true")
             binding.answerTextView.setText(answerText)
-            setAnswerShownResult(true)
-            quizViewModel.isCheater = true
+            CheatViewModel.setAnswerShown(true)
+            setAnswerShownResult(CheatViewModel.isAnswerShown())
         }
     }
 
 
-    private fun setAnswerShownResult(isAnswerShown: Boolean) {
+    fun setAnswerShownResult(isAnswerShown: Boolean) {
         val data = Intent().apply {
             putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown)
         }
@@ -75,16 +53,10 @@ class CheatActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun newIntent(
-            packageContext: Context,
-            answerIsTrue: Boolean,
-            hasCheated: Boolean,
-            currentQuestionCheated: Boolean
-        ): Intent {
+        fun newIntent(packageContext: Context, answerIsTrue: Boolean, isAlreadyCheater: Boolean): Intent {
             return Intent(packageContext, CheatActivity::class.java).apply {
                 putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue)
-                putExtra(EXTRA_HAS_CHEATED, hasCheated)
-                putExtra(EXTRA_CURRENT_QUESTION_CHEATED, currentQuestionCheated)
+                putExtra(EXTRA_IS_ALREADY_CHEATER, isAlreadyCheater)
             }
         }
     }

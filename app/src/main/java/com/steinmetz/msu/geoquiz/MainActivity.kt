@@ -21,11 +21,14 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         // Handle the result
         if (result.resultCode == Activity.RESULT_OK) {
+
             quizViewModel.isCheater =
                 result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            if (quizViewModel.isCheater) {
+                quizViewModel.isCheated()
+            }
         }
     }
-
 
     private var correctVar = 0
     private var totalAnswered = 0
@@ -36,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate(Bundle?) called")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        Log.d(TAG, quizViewModel.isCheated.toString())
 
 
         Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
@@ -54,7 +56,6 @@ class MainActivity : AppCompatActivity() {
             checkAnswer(false)
             checkAnswered()
 
-
         }
         binding.nextButton.setOnClickListener {
             quizViewModel.moveToNext()
@@ -70,14 +71,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.cheatButton.setOnClickListener {
             // Start Activity
-            val hasCheated = quizViewModel.isCheater
             val answerIsTrue = quizViewModel.currentQuestionAnswer
-            val currentQuestionCheated = quizViewModel.isCheated
             val intent = CheatActivity.newIntent(
                 this@MainActivity,
                 answerIsTrue,
-                hasCheated,
-                currentQuestionCheated
+                quizViewModel.currentQuestionCheated
             )
             cheatLauncher.launch(intent)
         }
@@ -87,14 +85,14 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val questionTextResId = quizViewModel.currentQuestionText
         binding.questionTextView.setText(questionTextResId)
+        quizViewModel.isCheater = false
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = quizViewModel.currentQuestionAnswer
         val messageResId: Int
-        if (quizViewModel.isCheater) {
+        if (quizViewModel.isCheater || quizViewModel.currentQuestionCheated) {
             messageResId = R.string.judgement_toast
-        } else if (userAnswer == correctAnswer) {
+        } else if (userAnswer == quizViewModel.currentQuestionAnswer) {
             messageResId = R.string.correct_toast
             correctVar++
         } else {
@@ -109,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAnswered() {
-        if (quizViewModel.currentQuestionAnswered == true) {
+        if (quizViewModel.currentQuestionAnswered) {
             binding.trueButton.isEnabled = false
             binding.falseButton.isEnabled = false
         } else {
@@ -119,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun gradedQuiz() {
-        var score: Double
+        val score: Double
         if (correctVar == 0) {
             Toast.makeText(this, "0.0%", Toast.LENGTH_LONG).show()
         } else {
